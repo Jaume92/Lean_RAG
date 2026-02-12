@@ -21,7 +21,7 @@ langchain-community==0.0.16
 # Document processing
 pypdf2==3.0.1
 python-docx==1.1.0
-unstructured==0.12.0
+unstructured
 
 # Database
 sqlalchemy==2.0.25
