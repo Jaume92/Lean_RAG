@@ -8,3 +8,4 @@ langchain
 qdrant-client
 python-multipart
 pydantic-settings
+anthropic
