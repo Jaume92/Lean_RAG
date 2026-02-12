@@ -4,7 +4,7 @@ import os
 from typing import Dict
 
 # Configuration
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://lean-rag.onrender.com")
 
 # Page config
 st.set_page_config(
