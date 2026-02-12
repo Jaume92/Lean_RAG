@@ -1,0 +1,43 @@
+# Backend Structure
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── routes.py
+│   │   └── websocket.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── security.py
+│   │   └── dependencies.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── rag_service.py
+│   │   ├── llm_service.py
+│   │   ├── calculator.py
+│   │   ├── vsm_generator.py
+│   │   └── a3_generator.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── schemas.py
+│   │   └── database.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── document_loader.py
+│       ├── text_splitter.py
+│       └── embeddings.py
+├── data/
+│   ├── knowledge_base/
+│   │   └── .gitkeep
+│   └── processed/
+│       └── .gitkeep
+├── tests/
+│   ├── __init__.py
+│   ├── test_rag.py
+│   ├── test_calculator.py
+│   └── test_api.py
+├── Dockerfile
+├── requirements.txt
+└── README.md
