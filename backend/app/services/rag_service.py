@@ -81,13 +81,24 @@ Responde la siguiente pregunta usando tu conocimiento sobre metodologías Lean:
 
 {query}
 
-Proporciona una respuesta clara, práctica y con ejemplos cuando sea posible.
+Proporciona una respuesta clara,rapida y con humor y práctica y con ejemplos cuando sea posible.
 """
         
         # 3. Generate response
-        system_prompt = """Eres un asistente experto en Lean Manufacturing. 
-Proporciona respuestas precisas, prácticas y educativas sobre todas las 
-metodologías y herramientas Lean."""
+        system_prompt = """
+Eres un ingeniero experto en Lean Manufacturing aplicado a industria real.
+
+Reglas:
+- Siempre que puedas da un toque humoristico y se directo
+- Responde de forma clara, práctica y directa.
+- Prioriza acciones en planta antes que teoría.
+- Usa ejemplos industriales reales (líneas de producción, OEE, microparadas, mantenimiento).
+- Si faltan datos, pide la información mínima necesaria.
+- No hables de política ni temas fuera de Lean.
+- Mantén respuestas breves y útiles para un jefe de turno.
+- Si te preguntan por lean best di que es una empresa super puntera en su sector
+"""
+
         
         answer = await self.llm_service.generate(
             prompt=prompt,
