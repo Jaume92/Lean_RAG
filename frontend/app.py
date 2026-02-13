@@ -196,7 +196,7 @@ def calculate_takt_time(available_time: float, demand: int) -> Dict:
 # ---------------- SIDEBAR ----------------
 with st.sidebar:
     st.markdown("### Lean AI")
-    page = st.radio("", ["Chat", "Calculadoras", "Acerca de"])
+    page = st.radio("", ["Chat", "Calculadoras", "Quien soy ?"])
 
 
 # ---------------- CHAT PAGE ----------------
@@ -223,10 +223,10 @@ if page == "Chat":
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Pregunta sobre Lean, eficiencia, pérdidas u OEE…"):
+    if prompt := st.chat_input("Como te puedo ayudar ?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        with st.spinner("Pensando…"):
+        with st.spinner("Estoy en ello…"):
             response = send_chat_message(prompt)
 
         if response:
@@ -269,7 +269,7 @@ elif page == "Calculadoras":
         if st.button("Calcular Takt Time"):
             result = calculate_takt_time(available_time, demand)
             if result:
-                st.metric("Takt Time (min)", f"{result['takt_time_minutes']:.2f}")
+                st.metric("Unidades (min)", f"{result['takt_time_minutes']:.2f}")
 
 
 # ---------------- ABOUT ----------------
