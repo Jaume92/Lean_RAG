@@ -273,7 +273,7 @@ elif page == "Calculadoras":
 
 
 # ---------------- ABOUT ----------------
-elif page == "Acerca de":
+elif page == "Quien soy ?":
 
     st.markdown('<div class="hero"><div class="title">Lean AI Assistant</div></div>', unsafe_allow_html=True)
 
