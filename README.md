@@ -1,244 +1,145 @@
-# 🏭 Lean AI Assistant
+Lean AI Assistant
+Asistente de Inteligencia Artificial orientado a Lean Manufacturing que combina conocimiento en metodologías de mejora continua con análisis de datos y generación de respuestas mediante RAG.
 
-Un asistente de IA especializado en Lean Manufacturing que combina conocimiento experto en metodologías Lean con capacidades de análisis de datos en tiempo real.
+Demo en producción
+https://leanrag-fpayub2h46ogjcnn3kquub.streamlit.app/
 
-## 🎯 Características
+Descripción
+Proyecto enfocado en construir una herramienta práctica para consulta de conceptos Lean, cálculo de métricas productivas y apoyo en análisis de procesos industriales.
 
-- **Chat Inteligente**: Responde preguntas sobre metodologías Lean usando RAG (Retrieval-Augmented Generation)
-- **Calculadoras Lean**: OEE, Takt Time, Lead Time, y más
-- **Generación de Herramientas**: VSM, A3 Reports, PDCA (próximamente)
-- **Análisis de Procesos**: Identifica desperdicios y sugiere mejoras
+Funcionalidades actuales
 
-## 🏗️ Arquitectura
+Chat basado en RAG para preguntas sobre Lean Manufacturing
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Frontend   │────▶│   Backend   │────▶│  Qdrant DB  │
-│ (Streamlit) │     │  (FastAPI)  │     │  (Vectors)  │
-└─────────────┘     └─────────────┘     └─────────────┘
-                           │
-                    ┌──────┴──────┐
-                    │             │
-              ┌─────▼────┐  ┌─────▼────┐
-              │  Redis   │  │PostgreSQL│
-              │ (Cache)  │  │   (DB)   │
-              └──────────┘  └──────────┘
-```
+Calculadoras de métricas: OEE, Takt Time y Lead Time
 
-## 📋 Stack Tecnológico
+Estructura preparada para generación de herramientas Lean (VSM, A3, PDCA en desarrollo)
 
-**Backend:**
-- FastAPI (Python 3.11+)
-- OpenAI GPT-4 / Claude 3.5 Sonnet
-- Qdrant (Vector Database)
-- LangChain (RAG Framework)
-- PostgreSQL + Redis
+Base preparada para análisis de procesos y detección de desperdicios
 
-**Frontend:**
-- Streamlit (MVP)
-- React + TypeScript (próximamente)
+Arquitectura
+Frontend en Streamlit conectado a un backend en FastAPI.
+El backend gestiona embeddings en Qdrant, caché en Redis y persistencia en PostgreSQL.
 
-## 🚀 Inicio Rápido
+Stack tecnológico
 
-### Prerrequisitos
+Backend
 
-- Docker & Docker Compose
-- Python 3.11+
-- API Key de OpenAI o Anthropic
+Python 3.11
 
-### Instalación
+FastAPI
 
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/tuusuario/lean-ai-assistant.git
-cd lean-ai-assistant
-```
+LangChain
 
-2. **Configurar variables de entorno**
-```bash
-cp .env.example .env
-# Editar .env y añadir tus API keys
-```
+Qdrant (base de datos vectorial)
 
-3. **Iniciar servicios con Docker**
-```bash
-docker-compose up -d
-```
+PostgreSQL
 
-4. **Verificar que todo funciona**
-```bash
-# Backend API
-curl http://localhost:8000/health
+Redis
 
-# Frontend
-# Abrir http://localhost:8501 en el navegador
-```
+Integración con modelos LLM (OpenAI / Anthropic)
 
-### Instalación Local (Sin Docker)
+Frontend
 
-1. **Instalar dependencias del backend**
-```bash
-cd backend
+Streamlit (MVP actual)
+
+Migración futura a React + TypeScript
+
+Ejecución rápida
+
+Requisitos
+
+Python 3.11
+
+Docker (opcional)
+
+API Key de OpenAI o Anthropic
+
+Instalación básica
+
+Clonar repositorio
+git clone https://github.com/Jaume92/Lean_RAG.git
+
+cd Lean_RAG
+
+Crear entorno virtual
 python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+venv\Scripts\activate
 
-2. **Iniciar servicios requeridos**
-```bash
-# Qdrant (necesitas Docker para esto)
-docker run -p 6333:6333 qdrant/qdrant
+Instalar dependencias
+pip install -r backend/requirements.txt
 
-# Redis
-docker run -p 6379:6379 redis:7-alpine
+Lanzar servicios necesarios
+Qdrant, Redis y PostgreSQL pueden iniciarse con Docker si se desea.
 
-# PostgreSQL
-docker run -p 5432:5432 -e POSTGRES_PASSWORD=lean_password postgres:15-alpine
-```
-
-3. **Iniciar backend**
-```bash
+Ejecutar backend
 uvicorn app.main:app --reload
-```
 
-4. **Iniciar frontend (en otra terminal)**
-```bash
-cd frontend
-pip install streamlit
+Ejecutar frontend
 streamlit run app.py
-```
 
-## 📊 Uso
+Uso de la API
 
-### API Endpoints
+Ejemplo chat
+POST /api/chat
+mensaje: “¿Qué es el Takt Time?”
 
-**Chat:**
-```bash
-curl -X POST http://localhost:8000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "¿Qué es el Takt Time?"}'
-```
+Ejemplo cálculo OEE
+POST /api/calculate/oee
+availability, performance, quality
 
-**Calcular OEE:**
-```bash
-curl -X POST http://localhost:8000/api/calculate/oee \
-  -H "Content-Type: application/json" \
-  -d '{
-    "availability": 90,
-    "performance": 95,
-    "quality": 99
-  }'
-```
+Estructura del proyecto
 
-**Calcular Takt Time:**
-```bash
-curl -X POST http://localhost:8000/api/calculate/takt-time \
-  -H "Content-Type: application/json" \
-  -d '{
-    "available_time_minutes": 480,
-    "customer_demand_units": 240
-  }'
-```
+lean-ai-assistant
 
-### Interfaz de Chat
+backend
 
-1. Abrir http://localhost:8501
-2. Escribir tu pregunta sobre Lean
-3. Recibir respuesta con fuentes
+api
 
-## 📚 Añadir Conocimiento
+core
 
-Para enriquecer la base de conocimientos:
+services
 
-1. Añadir PDFs a `backend/data/knowledge_base/`
-2. Ejecutar script de ingestión:
-```bash
-python scripts/ingest_documents.py
-```
+models
 
-**Libros recomendados para añadir:**
-- Toyota Production System (Taiichi Ohno)
-- Lean Thinking (Womack & Jones)
-- The Machine That Changed the World
-- Learning to See (Mike Rother)
+utils
 
-## 🧪 Tests
+frontend
 
-```bash
-cd backend
-pytest tests/
-```
+scripts
 
-## 📁 Estructura del Proyecto
+docker-compose.yml
 
-```
-lean-ai-assistant/
-├── backend/
-│   ├── app/
-│   │   ├── api/          # Endpoints
-│   │   ├── core/         # Configuración
-│   │   ├── services/     # Lógica de negocio
-│   │   ├── models/       # Modelos de datos
-│   │   └── utils/        # Utilidades
-│   ├── data/             # Datos y embeddings
-│   ├── tests/            # Tests
-│   └── requirements.txt
-├── frontend/
-│   └── app.py           # Streamlit app
-├── scripts/
-│   └── ingest_documents.py
-├── docker-compose.yml
-└── README.md
-```
+Estado del proyecto
 
-## 🗺️ Roadmap
+Fase actual
 
-### Fase 1: MVP (Actual) ✅
-- [x] Chat básico con RAG
-- [x] Calculadoras Lean (OEE, Takt Time, Lead Time)
-- [x] Docker setup
-- [ ] Script de ingestión de documentos
-- [ ] Frontend Streamlit
+Chat funcional con RAG
 
-### Fase 2: Herramientas Avanzadas
-- [ ] Generador de VSM
-- [ ] Generador de A3 Reports
-- [ ] Análisis de procesos desde CSV
-- [ ] Frontend React
+Calculadoras Lean básicas
 
-### Fase 3: Características Empresariales
-- [ ] Autenticación de usuarios
-- [ ] Knowledge base privada por empresa
-- [ ] Fine-tuning personalizado
-- [ ] API pública
+Ingesta de documentos PDF
 
-## 🤝 Contribuir
+MVP funcional desplegado en Streamlit
 
-Las contribuciones son bienvenidas! Por favor:
+Próximos pasos
 
-1. Fork el proyecto
-2. Crea una branch (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
-4. Push a la branch (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+Generación automática de VSM y A3
 
-## 📝 Licencia
+Análisis de procesos desde datos reales
 
-MIT License - ver archivo LICENSE para detalles
+Frontend en React
 
-## 👤 Autor
+Sistema multiempresa
 
-**Jaume RRM**
-- GitHub: [@Jaume92](https://github.com/Jaume92)
-- LinkedIn: [jaume-ruiz-ruano-marcos](https://www.linkedin.com/in/jaume-ruiz-ruano-marcos)
-- Web: [www.jaumerrm.dev](http://www.jaumerrm.dev)
+Autor
+Jaume Ruiz-Ruano
 
-## 🙏 Agradecimientos
+GitHub
+https://github.com/Jaume92
 
-- Toyota Production System por las metodologías Lean
-- OpenAI y Anthropic por los modelos de IA
-- Comunidad open source
+LinkedIn
+https://www.linkedin.com/in/jaume-ruiz-ruano-marcos
 
----
-
-**¿Preguntas?** Abre un issue en GitHub o contacta al autor.
+Web
+https://www.jaumerrm.dev
