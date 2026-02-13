@@ -281,6 +281,11 @@ elif page == "Acerca de":
 **Lean AI Assistant** es un copiloto de inteligencia artificial diseñado para
 mejorar la eficiencia operativa en entornos industriales reales.
 
+** Es muy possible que la primera interracion tarde debido a que el servidor de render
+    se encuentra en resilencia ! hay que tener algo de paciencia !                
+
+
+
 Combina conocimiento experto en **Lean Manufacturing**, análisis de procesos y
 modelos de IA modernos para ayudar a:
 
