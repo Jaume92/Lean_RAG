@@ -12,6 +12,26 @@ st.set_page_config(
     layout="wide"
 )
 
+# ----------- HTTP SESSION CACHE -----------
+
+@st.cache_resource
+def get_session():
+    return requests.Session()
+
+session = get_session()
+
+# ----------- BACKEND PRE-WARM -----------
+
+@st.cache_data(ttl=300)
+def warm_backend():
+    try:
+        session.get(f"{BACKEND_URL}/health", timeout=5)
+        return True
+    except Exception:
+        return False
+
+warm_backend()
+
 # ----------- LIGHT / DARK THEME SUPPORT -----------
 
 theme = st.toggle("Modo oscuro", value=True)
@@ -23,29 +43,23 @@ if theme:
         background: radial-gradient(circle at 50% -20%, #1e293b, #020617);
         color: #e5e7eb;
     }
+                
+    section.main > div {
+    background: transparent !important;
+         }
 
-    /* HERO WOW */
-    .hero {
-        text-align: center;
-        padding: 4rem 0 2.5rem 0;
-    }
+     .block-container {
+    background: transparent !important;
+    padding-top: 2rem;
+}
 
+    .hero { text-align: center; padding: 4rem 0 2.5rem 0; }
     .title {
-        font-size: 3rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
+        font-size: 3rem; font-weight: 800; letter-spacing: -0.03em;
         background: linear-gradient(90deg, #60a5fa, #818cf8, #22d3ee);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
-    .subtitle {
-        color: #94a3b8;
-        margin-top: 0.7rem;
-        font-size: 1.15rem;
-    }
-
-    /* CHAT GLASS CARD */
+    .subtitle { color: #94a3b8; margin-top: 0.7rem; font-size: 1.15rem; }
     .chat-card {
         background: rgba(15, 23, 42, 0.65);
         border: 1px solid rgba(148, 163, 184, 0.18);
@@ -55,13 +69,10 @@ if theme:
         box-shadow: 0 25px 80px rgba(0,0,0,0.55);
         transition: all 0.3s ease;
     }
-
     .chat-card:hover {
         box-shadow: 0 30px 100px rgba(0,0,0,0.7);
         transform: translateY(-2px);
     }
-
-    /* MESSAGES */
     .msg-user {
         background: linear-gradient(135deg, #2563eb, #4f46e5);
         color: white;
@@ -72,7 +83,6 @@ if theme:
         font-weight: 500;
         box-shadow: 0 8px 25px rgba(37,99,235,0.35);
     }
-
     .msg-assistant {
         background: rgba(30, 41, 59, 0.9);
         border: 1px solid rgba(148, 163, 184, 0.18);
@@ -80,62 +90,34 @@ if theme:
         border-radius: 16px;
         margin: 0.45rem 0;
     }
-
-    .footer {
-        text-align: center;
-        color: #64748b;
-        margin-top: 3rem;
-        font-size: 0.85rem;
-    }
+    .footer { text-align: center; color: #64748b; margin-top: 3rem; font-size: 0.85rem; }
     </style>
     """, unsafe_allow_html=True)
 else:
     st.markdown("""
     <style>
     html, body, .stApp { background:#f8fafc; color:#0f172a; }
-
     .hero { text-align:center; padding:4rem 0 2.5rem 0; }
-
     .title {
-        font-size: 3rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
+        font-size: 3rem; font-weight: 800; letter-spacing: -0.03em;
         background: linear-gradient(90deg, #2563eb, #7c3aed);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
     .subtitle { color:#475569; margin-top:0.7rem; font-size:1.15rem; }
-
     .chat-card {
-        background:white;
-        border:1px solid #e2e8f0;
-        border-radius:22px;
-        padding:1.8rem;
-        box-shadow:0 20px 60px rgba(0,0,0,0.08);
+        background:white; border:1px solid #e2e8f0; border-radius:22px;
+        padding:1.8rem; box-shadow:0 20px 60px rgba(0,0,0,0.08);
         transition:all .25s ease;
     }
-
     .chat-card:hover { transform:translateY(-2px); box-shadow:0 25px 70px rgba(0,0,0,0.12); }
-
     .msg-user {
-        background:#2563eb;
-        color:white;
-        padding:0.85rem 1.1rem;
-        border-radius:16px;
-        margin:0.45rem 0;
-        text-align:right;
-        font-weight:500;
+        background:#2563eb; color:white; padding:0.85rem 1.1rem;
+        border-radius:16px; margin:0.45rem 0; text-align:right; font-weight:500;
     }
-
     .msg-assistant {
-        background:#f1f5f9;
-        border:1px solid #e2e8f0;
-        padding:0.85rem 1.1rem;
-        border-radius:16px;
-        margin:0.45rem 0;
+        background:#f1f5f9; border:1px solid #e2e8f0;
+        padding:0.85rem 1.1rem; border-radius:16px; margin:0.45rem 0;
     }
-
     .footer { text-align:center; color:#64748b; margin-top:3rem; font-size:0.85rem; }
     </style>
     """, unsafe_allow_html=True)
@@ -144,14 +126,14 @@ else:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-
 # ---------------- API ----------------
 
 def send_chat_message(message: str) -> Dict:
     try:
-        response = requests.post(
+        response = session.post(
             f"{BACKEND_URL}/api/chat",
-            json={"message": message}
+            json={"message": message},
+            timeout=20
         )
         response.raise_for_status()
         return response.json()
@@ -162,13 +144,14 @@ def send_chat_message(message: str) -> Dict:
 
 def calculate_oee(availability: float, performance: float, quality: float) -> Dict:
     try:
-        response = requests.post(
+        response = session.post(
             f"{BACKEND_URL}/api/calculate/oee",
             json={
                 "availability": availability,
                 "performance": performance,
                 "quality": quality
-            }
+            },
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -179,12 +162,13 @@ def calculate_oee(availability: float, performance: float, quality: float) -> Di
 
 def calculate_takt_time(available_time: float, demand: int) -> Dict:
     try:
-        response = requests.post(
+        response = session.post(
             f"{BACKEND_URL}/api/calculate/takt-time",
             json={
                 "available_time_minutes": available_time,
                 "customer_demand_units": demand
-            }
+            },
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -204,7 +188,6 @@ if page == "Chat":
 
     st.markdown('<div class="hero">', unsafe_allow_html=True)
     st.markdown('<div class="title">Lean AI </div>', unsafe_allow_html=True)
-    
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="chat-card">', unsafe_allow_html=True)
@@ -283,8 +266,6 @@ mejorar la eficiencia operativa en entornos industriales reales.
 
 ** Es muy possible que la primera interracion tarde debido a que el servidor de render
     se encuentra en resilencia ! hay que tener algo de paciencia !                
-
-
 
 Combina conocimiento experto en **Lean Manufacturing**, análisis de procesos y
 modelos de IA modernos para ayudar a:

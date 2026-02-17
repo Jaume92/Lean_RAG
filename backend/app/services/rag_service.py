@@ -1,113 +1,104 @@
 from typing import List, Dict
+import os
+
+from sentence_transformers import SentenceTransformer
+from qdrant_client import QdrantClient
+from qdrant_client.models import Filter
+
 from app.core.config import settings
 from app.services.llm_service import LLMService
 
-# Note: This is a placeholder - you'll need to install and configure Qdrant
-# For now, we'll create the structure
 
 class RAGService:
     """
-    Retrieval-Augmented Generation service for Lean knowledge
+    Retrieval-Augmented Generation service optimized for low latency.
     """
-    
+
     def __init__(self):
+        # 🔹 LLM service
         self.llm_service = LLMService()
-        # TODO: Initialize Qdrant client
-        # self.vector_store = Qdrant(...)
-        # self.embeddings = HuggingFaceEmbeddings(...)
-        
+
+        # 🔹 Load embeddings ONCE (critical for speed)
+        self.embedder = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+        # 🔹 Persistent Qdrant client
+        self.qdrant = QdrantClient(
+            url=os.getenv("QDRANT_URL"),
+            api_key=os.getenv("QDRANT_API_KEY")
+        )
+
     async def retrieve_context(self, query: str, k: int = None) -> List[Dict]:
         """
-        Retrieve relevant context from the knowledge base
-        
-        Args:
-            query: User's question
-            k: Number of documents to retrieve (default from settings)
-        
-        Returns:
-            List of relevant document chunks
+        Retrieve relevant context from Qdrant vector DB.
         """
         if k is None:
             k = settings.RAG_TOP_K
-        
-        # TODO: Implement actual vector search
-        # For now, return empty list
-        return []
-    
+
+        # 🔹 Embed query
+        query_vector = self.embedder.encode(query).tolist()
+
+        # 🔹 Vector search
+        results = self.qdrant.search(
+            collection_name=settings.QDRANT_COLLECTION_NAME,
+            query_vector=query_vector,
+            limit=k
+        )
+
+        # 🔹 Format docs
+        docs = []
+        for r in results:
+            payload = r.payload or {}
+            docs.append({
+                "content": payload.get("content", ""),
+                "metadata": payload.get("metadata", {})
+            })
+
+        return docs
+
     async def answer_with_context(self, query: str) -> Dict:
         """
-        Generate answer using retrieved context
-        
-        Args:
-            query: User's question
-            
-        Returns:
-            Dict with answer and sources
+        Generate Lean expert answer using retrieved context.
         """
-        # 1. Retrieve relevant context
-        context_docs = await self.retrieve_context(query)
-        
-        # 2. Build prompt with context
-        if context_docs:
-            context_text = "\n\n".join([
-                f"Source {i+1}:\n{doc['content']}" 
-                for i, doc in enumerate(context_docs)
-            ])
-            
-            prompt = f"""Eres un experto en Lean Manufacturing con profundo conocimiento de:
-- Toyota Production System
-- Value Stream Mapping
-- 5S, Kaizen, TPM
-- JIT, Kanban, Pull Systems
-- OEE y métricas Lean
 
-Usa el siguiente contexto para responder la pregunta del usuario de forma clara, 
-práctica y con ejemplos cuando sea posible.
+        context_docs = await self.retrieve_context(query)
+
+        if context_docs:
+            context_text = "\n\n".join(
+                [f"Fuente {i+1}:\n{doc['content']}" for i, doc in enumerate(context_docs)]
+            )
+
+            prompt = f"""
+Eres un experto en Lean Manufacturing.
 
 Contexto:
 {context_text}
 
-Pregunta del usuario: {query}
-
-Proporciona una respuesta completa que:
-1. Responda directamente la pregunta
-2. Use ejemplos prácticos si es relevante
-3. Sugiera siguientes pasos o recursos adicionales si aplica
-"""
-        else:
-            # No context found, use general knowledge
-            prompt = f"""Eres un experto en Lean Manufacturing. 
-Responde la siguiente pregunta usando tu conocimiento sobre metodologías Lean:
-
+Pregunta:
 {query}
 
-Proporciona una respuesta clara,rapida y con humor y práctica y con ejemplos cuando sea posible.
+Responde de forma clara, práctica y directa, con ejemplos industriales reales.
 """
-        
-        # 3. Generate response
+        else:
+            prompt = f"""
+Eres un experto en Lean Manufacturing.
+Responde de forma clara, rápida y práctica:
+
+{query}
+"""
+
         system_prompt = """
-Eres un ingeniero experto en Lean Manufacturing aplicado a industria real con años
-de experiencia , piensa en como mejorar procesos y dar soluciones a qualquier problema que 
-pueda surgir .
-
-Reglas:
-- Siempre que puedas da un toque humoristico con un toque sarcastico y se directo
-- Responde de forma clara, práctica y directa.
-- Prioriza acciones en planta antes que teoría.
-- Usa ejemplos industriales reales (líneas de producción, OEE, microparadas, mantenimiento).
-- Si faltan datos, pide la información mínima necesaria.
-- No hables de política ni temas fuera de Lean.
-- Mantén respuestas breves y útiles para un jefe de turno.
-- Si te preguntan por lean best di que es un grupo y que goodwork es super puntera en su sector
+Ingeniero Lean industrial experto.
+Respuestas breves, accionables y útiles en planta.
+Tono directo con ligero humor y se sarcastico , si te preguntan prioriza practica sobre teoria 
 """
 
-        
         answer = await self.llm_service.generate(
             prompt=prompt,
             system_prompt=system_prompt
         )
-        
-        # 4. Format response
+
         sources = [
             {
                 "content": doc.get("content", "")[:200] + "...",
@@ -115,20 +106,26 @@ Reglas:
             }
             for doc in context_docs
         ]
-        
+
         return {
             "answer": answer,
             "sources": sources
         }
-    
+
     async def get_knowledge_stats(self) -> Dict:
         """
-        Get statistics about the knowledge base
+        Basic stats from Qdrant.
         """
-        # TODO: Implement actual stats from Qdrant
-        return {
-            "total_documents": 0,
-            "total_chunks": 0,
-            "collection_name": settings.QDRANT_COLLECTION_NAME,
-            "status": "Not initialized - add documents to knowledge base"
-        }
+        try:
+            info = self.qdrant.get_collection(settings.QDRANT_COLLECTION_NAME)
+            return {
+                "total_points": info.points_count,
+                "collection_name": settings.QDRANT_COLLECTION_NAME,
+                "status": "ready"
+            }
+        except Exception:
+            return {
+                "total_points": 0,
+                "collection_name": settings.QDRANT_COLLECTION_NAME,
+                "status": "collection not found"
+            }
