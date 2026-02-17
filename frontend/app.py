@@ -44,15 +44,6 @@ if theme:
         color: #e5e7eb;
     }
                 
-    section.main > div {
-    background: transparent !important;
-         }
-
-     .block-container {
-    background: transparent !important;
-    padding-top: 2rem;
-}
-
     .hero { text-align: center; padding: 4rem 0 2.5rem 0; }
     .title {
         font-size: 3rem; font-weight: 800; letter-spacing: -0.03em;
@@ -283,7 +274,7 @@ optimización de procesos**.
 
 ### Sobre el desarrollador
 
-Desarrollado por **Jaume RRM** con ayuda de claude, enfocado en la creación de soluciones de
+Desarrollado por **Jaume RRM** , enfocado en la creación de soluciones de
 **IA aplicada a operaciones industriales, automatización y mejora continua**.
 
 Puedes ver más proyectos, avances y recursos en su web personal:
