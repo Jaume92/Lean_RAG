@@ -1,6 +1,6 @@
 # Lean AI Assistant
 
-Asistente de inteligencia artificial especializado en Lean Manufacturing que combina una base de conocimiento técnico con RAG, calculadoras de métricas productivas y análisis de procesos industriales.
+Asistente de inteligencia artificial especializado en Lean Manufacturing que combina RAG sobre base de conocimiento técnico con calculadoras de métricas productivas.
 
 Demo en producción: [leanrag-fpayub2h46ogjcnn3kquub.streamlit.app](https://leanrag-fpayub2h46ogjcnn3kquub.streamlit.app)
 
@@ -17,7 +17,8 @@ Este asistente centraliza ese conocimiento y lo hace consultable en lenguaje nat
 ## Funcionalidades
 
 **Chat con RAG**
-Consulta de conceptos, metodologías y buenas prácticas Lean mediante lenguaje natural. El sistema recupera contexto relevante de la base de conocimiento antes de generar la respuesta.
+
+El sistema embebe la consulta con `sentence-transformers/all-MiniLM-L6-v2`, recupera los fragmentos más relevantes de Qdrant y construye el contexto antes de llamar al LLM. Si no hay contexto relevante, responde directamente desde el modelo.
 
 **Calculadoras de métricas productivas**
 - OEE (Overall Equipment Effectiveness)
@@ -28,6 +29,7 @@ Consulta de conceptos, metodologías y buenas prácticas Lean mediante lenguaje 
 - Generación automática de VSM y A3
 - Análisis de procesos desde datos reales de planta
 - Detección de desperdicios a partir de datos operativos
+- Frontend en React + TypeScript
 
 ---
 
@@ -37,15 +39,16 @@ Frontend (Streamlit)
         ↓
 Backend (FastAPI)
         ↓
-    ┌───────────────────────────┐
-    │  LangChain + LLM          │  ← OpenAI / Anthropic
-    │  Qdrant (vector store)    │  ← Base de conocimiento Lean
-    │  Redis (caché)            │
-    │  PostgreSQL (persistencia)│
-    └───────────────────────────┘
+    ┌──────────────────────────────────┐
+    │  LangChain + LLM                 │  ← OpenAI / Anthropic
+    │  Qdrant (vector store)           │  ← Base de conocimiento Lean
+    │  SentenceTransformers (embedder) │  ← all-MiniLM-L6-v2
+    │  Redis (caché)                   │
+    │  PostgreSQL (persistencia)       │
+    └──────────────────────────────────┘
 ```
 
-El frontend actual en Streamlit está planificado para migrar a React + TypeScript.
+El backend hace warm-up de embeddings en startup para evitar latencia en la primera consulta en producción.
 
 ---
 
@@ -53,12 +56,14 @@ El frontend actual en Streamlit está planificado para migrar a React + TypeScri
 
 | Capa | Tecnología |
 |---|---|
-| Backend | Python 3.11, FastAPI, LangChain |
-| Vector store | Qdrant |
+| Backend | Python 3.11, FastAPI |
+| RAG | LangChain, SentenceTransformers |
+| Vector store | Qdrant Cloud |
 | Caché | Redis |
 | Persistencia | PostgreSQL |
 | Frontend | Streamlit (MVP) → React + TypeScript |
 | LLM | OpenAI / Anthropic |
+| Deploy | Streamlit Cloud + Render |
 
 ---
 
@@ -71,7 +76,13 @@ venv\Scripts\activate
 pip install -r backend/requirements.txt
 ```
 
-Qdrant, Redis y PostgreSQL pueden iniciarse con Docker:
+Configurar variables de entorno:
+```bash
+cp .env.example .env
+# Añadir OPENAI_API_KEY o ANTHROPIC_API_KEY, QDRANT_URL, QDRANT_API_KEY
+```
+
+Arrancar servicios con Docker:
 ```bash
 docker-compose up -d
 ```
@@ -79,7 +90,7 @@ docker-compose up -d
 Arrancar backend y frontend:
 ```bash
 uvicorn app.main:app --reload
-streamlit run app.py
+streamlit run frontend/app.py
 ```
 
 ---
@@ -88,20 +99,27 @@ streamlit run app.py
 ```bash
 # Consulta al asistente
 POST /api/chat
-{ "mensaje": "¿Qué es el Takt Time?" }
+{ "message": "¿Qué es el Takt Time?" }
 
 # Cálculo de OEE
 POST /api/calculate/oee
 { "availability": 0.90, "performance": 0.85, "quality": 0.95 }
+
+# Cálculo de Takt Time
+POST /api/calculate/takt-time
+{ "available_time_minutes": 480, "customer_demand_units": 240 }
+
+# Estado de la base de conocimiento
+GET /api/knowledge/stats
 ```
 
 ---
 
 ## Estado del proyecto
 
-Funcional en producción como MVP. Chat RAG operativo, calculadoras Lean integradas e ingesta de documentos PDF activa.
+Chat RAG operativo en producción, calculadoras Lean integradas, ingesta de documentos PDF activa y health check con latencia en tiempo real.
 
-Próximos pasos: generación automática de VSM y A3, análisis de procesos desde datos reales, frontend en React y sistema multiempresa.
+Próximos pasos: generación automática de VSM y A3, análisis desde datos reales de planta, frontend en React y arquitectura multiempresa.
 
 ---
 
@@ -109,15 +127,22 @@ Próximos pasos: generación automática de VSM y A3, análisis de procesos desd
 ```
 lean-ai-assistant/
 ├── backend/
-│   ├── api/
-│   ├── core/
-│   ├── services/
-│   ├── models/
-│   └── utils/
-├── frontend/
-├── scripts/
+│   └── app/
+│       ├── api/routes.py        ← Endpoints FastAPI
+│       ├── core/config.py       ← Configuración centralizada
+│       ├── services/
+│       │   ├── rag_service.py   ← RAG + Qdrant
+│       │   ├── llm_service.py   ← Integración LLM
+│       │   └── calculator.py    ← Métricas Lean
+│       └── models/schemas.py    ← Modelos Pydantic
+├── frontend/app.py              ← Streamlit UI
+├── scripts/ingest_documents.py  ← Ingesta de PDFs
 └── docker-compose.yml
 ```
+
+---
+
+[jaumerrm.dev](https://www.jaumerrm.dev) · [LinkedIn](https://www.linkedin.com/in/jaume-ruiz-ruano-marcos) · [GitHub](https://github.com/Jaume92)
 
 ---
 
