@@ -1,145 +1,124 @@
-Lean AI Assistant
-Asistente de Inteligencia Artificial orientado a Lean Manufacturing que combina conocimiento en metodologías de mejora continua con análisis de datos y generación de respuestas mediante RAG.
+# Lean AI Assistant
 
-Demo en producción
-https://leanrag-fpayub2h46ogjcnn3kquub.streamlit.app/
+Asistente de inteligencia artificial especializado en Lean Manufacturing que combina una base de conocimiento técnico con RAG, calculadoras de métricas productivas y análisis de procesos industriales.
 
-Descripción
-Proyecto enfocado en construir una herramienta práctica para consulta de conceptos Lean, cálculo de métricas productivas y apoyo en análisis de procesos industriales.
+Demo en producción: [leanrag-fpayub2h46ogjcnn3kquub.streamlit.app](https://leanrag-fpayub2h46ogjcnn3kquub.streamlit.app)
 
-Funcionalidades actuales
+---
 
-Chat basado en RAG para preguntas sobre Lean Manufacturing
+## El problema que resuelve
 
-Calculadoras de métricas: OEE, Takt Time y Lead Time
+Los ingenieros y responsables de operaciones en entornos Lean necesitan respuestas rápidas a preguntas técnicas concretas: cómo calcular el OEE de una línea, qué desperdicios están afectando al Takt Time, cómo estructurar un análisis A3. La información existe, pero está dispersa en manuales, formaciones y documentos internos.
 
-Estructura preparada para generación de herramientas Lean (VSM, A3, PDCA en desarrollo)
+Este asistente centraliza ese conocimiento y lo hace consultable en lenguaje natural, con calculadoras integradas para las métricas más usadas en planta.
 
-Base preparada para análisis de procesos y detección de desperdicios
+---
 
-Arquitectura
-Frontend en Streamlit conectado a un backend en FastAPI.
-El backend gestiona embeddings en Qdrant, caché en Redis y persistencia en PostgreSQL.
+## Funcionalidades
 
-Stack tecnológico
+**Chat con RAG**
+Consulta de conceptos, metodologías y buenas prácticas Lean mediante lenguaje natural. El sistema recupera contexto relevante de la base de conocimiento antes de generar la respuesta.
 
-Backend
+**Calculadoras de métricas productivas**
+- OEE (Overall Equipment Effectiveness)
+- Takt Time
+- Lead Time
 
-Python 3.11
+**En desarrollo**
+- Generación automática de VSM y A3
+- Análisis de procesos desde datos reales de planta
+- Detección de desperdicios a partir de datos operativos
 
-FastAPI
+---
 
-LangChain
+## Arquitectura
+```
+Frontend (Streamlit)
+        ↓
+Backend (FastAPI)
+        ↓
+    ┌───────────────────────────┐
+    │  LangChain + LLM          │  ← OpenAI / Anthropic
+    │  Qdrant (vector store)    │  ← Base de conocimiento Lean
+    │  Redis (caché)            │
+    │  PostgreSQL (persistencia)│
+    └───────────────────────────┘
+```
 
-Qdrant (base de datos vectorial)
+El frontend actual en Streamlit está planificado para migrar a React + TypeScript.
 
-PostgreSQL
+---
 
-Redis
+## Stack tecnológico
 
-Integración con modelos LLM (OpenAI / Anthropic)
+| Capa | Tecnología |
+|---|---|
+| Backend | Python 3.11, FastAPI, LangChain |
+| Vector store | Qdrant |
+| Caché | Redis |
+| Persistencia | PostgreSQL |
+| Frontend | Streamlit (MVP) → React + TypeScript |
+| LLM | OpenAI / Anthropic |
 
-Frontend
+---
 
-Streamlit (MVP actual)
-
-Migración futura a React + TypeScript
-
-Ejecución rápida
-
-Requisitos
-
-Python 3.11
-
-Docker (opcional)
-
-API Key de OpenAI o Anthropic
-
-Instalación básica
-
-Clonar repositorio
+## Instalación
+```bash
 git clone https://github.com/Jaume92/Lean_RAG.git
-
 cd Lean_RAG
-
-Crear entorno virtual
 python -m venv venv
 venv\Scripts\activate
-
-Instalar dependencias
 pip install -r backend/requirements.txt
+```
 
-Lanzar servicios necesarios
-Qdrant, Redis y PostgreSQL pueden iniciarse con Docker si se desea.
+Qdrant, Redis y PostgreSQL pueden iniciarse con Docker:
+```bash
+docker-compose up -d
+```
 
-Ejecutar backend
+Arrancar backend y frontend:
+```bash
 uvicorn app.main:app --reload
-
-Ejecutar frontend
 streamlit run app.py
+```
 
-Uso de la API
+---
 
-Ejemplo chat
+## API — Ejemplos de uso
+```bash
+# Consulta al asistente
 POST /api/chat
-mensaje: “¿Qué es el Takt Time?”
+{ "mensaje": "¿Qué es el Takt Time?" }
 
-Ejemplo cálculo OEE
+# Cálculo de OEE
 POST /api/calculate/oee
-availability, performance, quality
+{ "availability": 0.90, "performance": 0.85, "quality": 0.95 }
+```
 
-Estructura del proyecto
+---
 
-lean-ai-assistant
+## Estado del proyecto
 
-backend
+Funcional en producción como MVP. Chat RAG operativo, calculadoras Lean integradas e ingesta de documentos PDF activa.
 
-api
+Próximos pasos: generación automática de VSM y A3, análisis de procesos desde datos reales, frontend en React y sistema multiempresa.
 
-core
+---
 
-services
+## Estructura del proyecto
+```
+lean-ai-assistant/
+├── backend/
+│   ├── api/
+│   ├── core/
+│   ├── services/
+│   ├── models/
+│   └── utils/
+├── frontend/
+├── scripts/
+└── docker-compose.yml
+```
 
-models
+---
 
-utils
-
-frontend
-
-scripts
-
-docker-compose.yml
-
-Estado del proyecto
-
-Fase actual
-
-Chat funcional con RAG
-
-Calculadoras Lean básicas
-
-Ingesta de documentos PDF
-
-MVP funcional desplegado en Streamlit
-
-Próximos pasos
-
-Generación automática de VSM y A3
-
-Análisis de procesos desde datos reales
-
-Frontend en React
-
-Sistema multiempresa
-
-Autor
-Jaume Ruiz-Ruano
-
-GitHub
-https://github.com/Jaume92
-
-LinkedIn
-https://www.linkedin.com/in/jaume-ruiz-ruano-marcos
-
-Web
-https://www.jaumerrm.dev
+[jaumerrm.dev](https://www.jaumerrm.dev) · [LinkedIn](https://www.linkedin.com/in/jaume-ruiz-ruano-marcos) · [GitHub](https://github.com/Jaume92)
